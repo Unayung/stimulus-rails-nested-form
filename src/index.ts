@@ -5,21 +5,40 @@ export default class extends Controller {
   templateTarget: HTMLElement
   wrapperSelectorValue: string
   wrapperSelector: string
+  actionSelector: string
+  actionSelectorValue: string
+  templateTargets: any
+  targetTargets: any
 
   static targets = ['target', 'template']
   static values = {
-    wrapperSelector: String
+    wrapperSelector: String,
+    actionSelector: String
   }
 
   initialize (): void {
     this.wrapperSelector = this.wrapperSelectorValue || '.nested-form-wrapper'
+    this.actionSelector = this.actionSelectorValue || '.nested-form-action'
   }
 
   add (e: Event) {
     e.preventDefault()
 
-    const content: string = this.templateTarget.innerHTML.replace(/NEW_RECORD/g, new Date().getTime().toString())
-    this.targetTarget.insertAdjacentHTML('beforebegin', content)
+    const actionSelector = e.target.closest(this.actionSelector)
+    const insertHTML = (target, content) => {
+      target.insertAdjacentHTML('beforebegin', content)
+    }
+
+    if (actionSelector) {
+      const model = actionSelector.dataset.model
+      const templateTarget = this.templateTargets.find(el => el.dataset.modelTemplate === model)
+      const target = this.targetTargets.find(el => el.dataset.modelTarget === model)
+      const content = templateTarget.innerHTML.replace(/NEW_RECORD/g, new Date().getTime())
+      insertHTML(target, content)
+    } else {
+      const content = this.templateTarget.innerHTML.replace(/NEW_RECORD/g, new Date().getTime())
+      insertHTML(this.targetTarget, content)
+    }
   }
 
   remove (e: Event): void {
